@@ -1,0 +1,9 @@
+# cargo-audit ignore list. Supply-chain is out of scope for arca v1 (threat model);
+# these are recorded, not chased. Mirrors deny.toml + the lockfile-only quinn entry.
+[advisories]
+ignore = [
+    "RUSTSEC-2026-0185", # quinn-proto 0.11.14 HIGH — lockfile-only: `cargo tree -i quinn-proto` is EMPTY (reqwest's rustls feature set pulls no HTTP/3), so the vulnerable QUIC code is never compiled/linked into arca
+    "RUSTSEC-2024-0436", # paste unmaintained — build-time proc-macro via ratatui
+    "RUSTSEC-2024-0370", # proc-macro-error unmaintained — build-time proc-macro via age
+    "RUSTSEC-2026-0002", # lru unsound IterMut — ratatui-internal; arca never calls lru's IterMut
+]

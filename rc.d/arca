@@ -1,0 +1,23 @@
+#!/bin/ksh
+#
+# $OpenBSD: arca,v 1.0 2026/05/22 $
+
+daemon="/usr/local/sbin/arca-daemon"
+daemon_user="_arca"
+daemon_flags=""
+rc_bg=YES
+rc_reload=YES        # SIGHUP triggers config re-read in arca-daemon
+
+. /etc/rc.d/rc.subr
+
+# /var/run is wiped by /etc/rc at boot (it rm -rf's /var/run/*, subdirs
+# included), so the daemon's rundir vanishes on every reboot and the pidfile
+# + read/write sockets can't be created — the daemon loads providers then
+# dies binding the sockets. Recreate the rundir before each start. 0750
+# _arca:_arca so the operator (in group _arca) can traverse to the
+# UID-gated 0660 write.sock over mesh SSH.
+rc_pre() {
+	install -d -o _arca -g _arca -m 0750 /var/run/arca
+}
+
+rc_cmd $1

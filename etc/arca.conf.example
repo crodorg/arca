@@ -1,0 +1,48 @@
+# arca daemon — non-secret config. Secrets live in /etc/arca/secrets.age
+# (encrypted with age) and are referenced by `secret_ref` per provider.
+
+[daemon]
+db_path     = "/var/arca/arca.db"
+log_path    = "/var/log/arca/arca.log"
+# Two Unix sockets. read.sock (mode 0660) carries snapshot.*/tx.list/health and
+# is what the arca-xmpp bridge connects to; write.sock adds manual.*/provider.
+# refresh and is gated to operator_uid via getpeereid(2). The TUI uses write.sock.
+read_socket_path  = "/var/run/arca/read.sock"
+write_socket_path = "/var/run/arca/write.sock"
+# Numeric UID permitted to send write verbs over write.sock. Find it with
+# `id -u <operator>`. If unset, the write socket fails closed (rejects all).
+# (This gates the Unix write socket only; the loopback TCP listener is unused.)
+operator_uid = 1000
+pid_path    = "/var/run/arca/arca.pid"
+tcp_bind    = "127.0.0.1:7732"
+secrets_age = "/etc/arca/secrets.age"
+secrets_key = "/etc/arca/secrets.key"
+tz_display  = "America/Puerto_Rico"
+
+[alerts]
+# The engine evaluates rules and records breaches to alert_history with
+# delivered=false. Delivery is out of band: the arca-xmpp bridge pushes
+# undelivered rows to the operator's JID (see the design spec "Hermes integration").
+check_interval_secs = 300      # how often the engine evaluates rules; 5 min so a
+                               # minute-precise `reminder` (e.g. 10:30) is punctual
+dedup_window_secs   = 86400    # don't re-fire the same rule within this window
+
+[reports]
+# Monthly Markdown report. Writes <reports_dir>/<YYYY-MM>.md on the configured
+# day-of-month (AST) at-or-after the hour and records scheduled_jobs.report.monthly.
+# Delivery is out of band — the arca-xmpp bridge picks up the new file.
+reports_dir         = "/var/arca/reports"
+check_interval_secs = 3600
+min_day_of_month    = 1
+hour_at_or_after    = 6
+
+[calendar]
+# Weekly .ics digest of upcoming planned expenses + subscription renewals.
+# Writes the .ics under ics_dir and records scheduled_jobs.digest.weekly.
+# Delivery is out of band — the arca-xmpp bridge picks up the new file.
+ics_dir             = "/var/arca/reports"
+check_interval_secs = 3600
+day_of_week         = "mon"
+hour_at_or_after    = 7
+lookahead_days      = 30
+send_when_empty     = false

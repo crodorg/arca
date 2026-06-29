@@ -1,0 +1,31 @@
+[package]
+name = "arca-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2024"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+
+[dependencies.arca-core]
+path = "../crates/arca-core"
+
+# No `[lints] workspace = true`: this crate is excluded from `default-members`, so
+# the gate's clippy never sees it, and no_main + libfuzzer macros don't fit pedantic.
+
+[[bin]]
+name = "rpc_request"
+path = "fuzz_targets/rpc_request.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "rpc_response"
+path = "fuzz_targets/rpc_response.rs"
+test = false
+doc = false
+bench = false

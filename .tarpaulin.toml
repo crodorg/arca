@@ -1,0 +1,8 @@
+# cargo-tarpaulin config (read automatically by `cargo tarpaulin`).
+#
+# The soak harness is an #[ignore] runtime test — it drives the real TUI in a
+# pseudo-terminal against a live throwaway daemon, which tarpaulin cannot execute.
+# Its ~400 harness lines would otherwise count as uncovered and drag the coverage
+# ratchet floor down for code that is exercised by `qa.sh stress`, not `cargo test`.
+[default]
+exclude-files = ["crates/arca-tui/tests/soak.rs"]

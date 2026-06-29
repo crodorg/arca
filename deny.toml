@@ -1,0 +1,57 @@
+# cargo-deny config for arca. Run via `sh scripts/qa.sh audit` (or `cargo deny check`).
+#
+# Supply-chain risk is OUT OF SCOPE for arca v1 (threat-model: the design spec "Out of
+# scope (v1)"). This file is therefore the cheap, documentary layer: a real license
+# allowlist + an advisory ignore-list (rationale per entry) so `cargo deny check`
+# stays green on the KNOWN set and only a NEW advisory or a non-allowed license
+# trips it. We do NOT chase upstream fixes here.
+#
+# Note: cargo-deny resolves the build GRAPH, so an advisory on a crate that is in
+# Cargo.lock but not actually compiled (e.g. quinn-proto, an unused reqwest HTTP/3
+# transitive) never fires here — it is handled in `.cargo/audit.toml` for the
+# lockfile-scanning `cargo audit`.
+
+[graph]
+all-features = false
+no-default-features = false
+
+[advisories]
+ignore = [
+    # Both transitive build-time proc-macros; not in arca's runtime binary. Re-evaluate on dep bumps.
+    "RUSTSEC-2024-0436", # paste 1.0.15 unmaintained — via ratatui
+    "RUSTSEC-2024-0370", # proc-macro-error 1.0.4 unmaintained — via age -> i18n-embed-fl
+]
+
+[licenses]
+# Permissive set actually present in arca's graph (enumerated 2026-06-28 via cargo-deny).
+# Dual-licensed crates (e.g. self_cell "Apache-2.0 OR GPL-2.0-only", the many "Unlicense
+# OR MIT") are satisfied by the allowed half — no copyleft is actually pulled in.
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "ISC",
+    "Zlib",
+    "Unicode-3.0",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "CDLA-Permissive-2.0",
+    "BSL-1.0",
+    "0BSD",
+    "NCSA",              # University of Illinois/NCSA — libfuzzer-sys (the fuzz crate's harness)
+]
+confidence-threshold = 0.8
+exceptions = []
+# arca-fuzz is a workspace-private (publish = false) harness with no license field;
+# don't license-check our own internal crates.
+private = { ignore = true }
+
+[bans]
+multiple-versions = "warn"   # transitive pins produce some dupes; warn, don't fail
+wildcards = "allow"
+highlight = "all"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []

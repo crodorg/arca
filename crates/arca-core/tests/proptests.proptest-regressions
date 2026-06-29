@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc ec282001e575e7fc913e93ea3335fbd9a9615788db5e62c1c7bf56f957e5edf3 # shrinks to a = Allocation { equity: Cents(0), long_treasuries: Cents(0), cash: Cents(-11768130986), gold_etf: Cents(0), other: Cents(0), total: Cents(-11768130986) }

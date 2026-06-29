@@ -1,0 +1,13 @@
+/target
+# cargo-mutants scratch output (qa.sh mutants)
+/mutants.out
+/mutants.out.old
+**/*.db
+**/*.db-wal
+**/*.db-shm
+/etc/arca/secrets.age
+/etc/arca/secrets.key
+*.swp
+.DS_Store
+__pycache__/
+*.pyc

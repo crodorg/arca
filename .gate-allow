@@ -1,0 +1,3 @@
+crates/arca-core/src/db.rs
+crates/arca-daemon/src/alerts.rs
+crates/arca-tui/src/app.rs

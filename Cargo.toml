@@ -1,0 +1,86 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/arca-core",
+    "crates/arca-daemon",
+    "crates/arca-tui",
+    "fuzz",
+]
+# `fuzz` is a workspace member so it shares this lockfile (a standalone fuzz lock
+# can pull a conflicting copy of a shared dep). `default-members` keeps bare
+# `cargo build/test/clippy` — and therefore `make check` — scoped to the three
+# shippable crates; the nightly-only libFuzzer crate is built only by an explicit
+# `cargo +nightly fuzz run`.
+default-members = [
+    "crates/arca-core",
+    "crates/arca-daemon",
+    "crates/arca-tui",
+]
+
+[workspace.package]
+edition      = "2024"
+rust-version = "1.94"
+authors      = ["Chris Rodriguez"]
+license      = "MIT"
+repository   = "https://github.com/crodorg/arca"
+
+[workspace.dependencies]
+anyhow            = "1"
+thiserror         = "2"
+tracing           = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-appender   = "0.2"
+serde             = { version = "1", features = ["derive"] }
+serde_json        = "1"
+tokio             = { version = "1", features = ["rt-multi-thread", "macros", "net", "io-util", "sync", "signal", "time", "fs"] }
+chrono            = { version = "0.4", default-features = false, features = ["clock", "std", "serde"] }
+chrono-tz         = "0.10"
+rusqlite          = { version = "0.32", features = ["bundled"] }
+toml              = "0.8"
+ratatui           = { version = "0.29", default-features = false, features = ["crossterm"] }
+crossterm         = "0.28"
+clap              = { version = "4", features = ["derive", "env"] }
+tempfile          = "3"
+async-trait       = "0.1"
+reqwest           = { version = "0.12", default-features = false, features = ["json", "rustls-tls", "rustls-tls-webpki-roots", "gzip"] }
+age               = { version = "0.10", features = ["armor"] }
+secrecy           = "0.8"  # match age 0.10's secrecy version to avoid two copies in the graph
+wiremock          = "0.6"
+url               = "2"
+futures-util      = "0.3"
+proptest          = "1"
+portable-pty      = "0.9"   # dev-only: PTY soak harness (arca-tui)
+libc              = "0.2"   # dev-only: pty termios + /proc CPU sampling (arca-tui soak)
+
+[workspace.lints.clippy]
+pedantic   = { level = "warn", priority = -1 }
+# Pragmatic allowlist — keep small, justify each addition.
+module_name_repetitions = "allow"  # repeated names are clearer than acronyms in this crate
+missing_errors_doc      = "allow"  # thiserror enums document themselves
+missing_panics_doc      = "allow"
+must_use_candidate      = "allow"
+inconsistent_digit_grouping = "allow" # XX_YY_ZZ = dollars_thousands_cents convention for money
+doc_markdown            = "allow"  # noisy on identifiers that are not crate items
+cast_precision_loss     = "allow"  # i64 -> f64 acceptable for display-only percentages
+cast_possible_truncation = "allow" # uptime seconds fits an i64 by definition
+cast_sign_loss          = "allow"
+map_unwrap_or           = "allow"  # `.map().unwrap_or()` reads fine for short defaults
+too_many_lines          = "allow"  # rendering functions are linear by design
+needless_pass_by_value  = "allow"  # owned T arg into spawn is intentional
+unnecessary_wraps       = "allow"  # cfg(target_os) stubs need matching signatures
+cast_possible_wrap      = "allow"  # u64 -> i64 for unix seconds is fine
+default_trait_access    = "allow"
+uninlined_format_args   = "allow"
+collapsible_if          = "allow"
+unchecked_time_subtraction = "allow"
+duration_suboptimal_units = "allow"
+return_self_not_must_use = "allow"  # builder-style setters
+match_same_arms          = "allow"  # explicit named arm + wildcard is fine for readability
+similar_names            = "allow"  # plaid/payment/posted overlap is fine
+
+[profile.release]
+opt-level     = 3
+lto           = "thin"
+codegen-units = 1
+strip         = "symbols"
+panic         = "abort"

@@ -1,0 +1,26 @@
+#!/bin/ksh
+#
+# $OpenBSD: arca_xmpp,v 1.0 2026/05/25 $
+#
+# Service name uses an underscore, not a hyphen: rcctl/rc.subr derive shell
+# variables (${name}_flags etc.) from the basename, and a hyphen is not a valid
+# shell variable character — a hyphenated rc.d name reads as "does not exist".
+#
+# Supervision for the arca-xmpp bridge (slixmpp). Outbound XMPP client to
+# arca@<xmpp-host> over the mesh network; query allowlist + alert/report push. Runs as
+# _arca: needs rx on read.sock and rw on arca.db (the delivered=1 flip after a
+# push). Config is /etc/arca/arca-xmpp.conf (0600, _arca-readable) — it holds
+# the XMPP password, so the bridge takes no secret in argv or env.
+#
+# The script does not self-daemonize (slixmpp process(forever=True)), so
+# rc_bg=YES lets rc.subr background it. Invoke via the explicit interpreter so
+# the ps command line (and thus the default pexp) is predictable.
+
+daemon="/usr/local/bin/python3"
+daemon_flags="/usr/local/libexec/arca-xmpp.py"
+daemon_user="_arca"
+rc_bg=YES
+
+. /etc/rc.d/rc.subr
+
+rc_cmd $1

@@ -1,0 +1,45 @@
+# arca-xmpp bridge config. Install to /etc/arca/arca-xmpp.conf, mode 0600,
+# owned by the user that runs the bridge. Contains the XMPP password — secret.
+
+[xmpp]
+# arca's own JID on the XMPP server.
+jid = arca@example.com
+password = CHANGEME
+
+# Comma-separated BARE JIDs allowed to command arca. Messages from anyone else
+# are ignored silently. List every device/account you'll query arca from.
+allowed_jids = you@example.com
+
+# XMPP host reached over your private network interface, and its port. Use the
+# host name or IP. The router dials OUT — it does not listen on 5222.
+host = example.com
+port = 5222
+
+# arca-cli binary and the READ socket it must use. Never point this at the
+# write socket: the bridge is read-only by design.
+arca_cli = /usr/local/bin/arca
+read_socket = /var/run/arca/read.sock
+
+# Guards.
+timeout_secs = 10
+min_interval_secs = 2
+
+# --- push side: deliver what the daemon only records --------------------
+# The daemon never delivers; this bridge polls and pushes. Set push_enabled
+# to false for a query-only (read-only) bridge during staged rollout.
+push_enabled = true
+# Where pushed alerts/reports go. Defaults to the first allowed_jid.
+operator_jid = you@example.com
+# arca.db is opened READ-WRITE solely to flip alert_history.delivered=1 after a
+# push. The bridge must run as a user with rw on the DB (e.g. _arca, or a member
+# of the _arca group with group-write on /var/arca/arca.db and its -wal/-shm).
+db_path = /var/arca/arca.db
+# Report (.md) and calendar (.ics) directories to watch for new files. Match the
+# daemon's [reports] reports_dir and [calendar] ics_dir.
+reports_dir = /var/arca/reports
+ics_dir = /var/arca/reports
+# Tracks which report/.ics files were already pushed (one path per line). First
+# run seeds it with existing files and pushes none, to avoid a deploy-time flood.
+state_file = /var/arca/arca-xmpp.state
+# How often the push loop checks for new alerts/files.
+poll_interval_secs = 60
